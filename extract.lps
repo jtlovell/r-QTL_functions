@@ -1,0 +1,19 @@
+extract.lps<-function(bestmodels=bestmodels, beststats=beststats,qtlphes=qtlphes){
+  lps.df<-data.frame()
+  all.lps<-sapply(bestmodels, function (x) attr (x, "lodprofile"))
+  for (i in qtlphes){
+    phe.lps<-all.lps[[i]]
+    for(j in 1:length(phe.lps)){
+      qtl.id.in<-beststats$qtl.id[beststats$phenotype==i][j]
+      lp.df<-as.data.frame(phe.lps[j])
+      colnames(lp.df)<-c("chr", "pos", "lod")
+      lp.df$phenotype<-i
+      lp.df$qtl.id<-qtl.id.in
+      lp.df$st.lod<-lp.df$lod/max(lp.df$lod)
+      lp.df$lod[lp.df$lod<0]<-NA
+      lp.df$st.lod[lp.df$st.lod<0]<-NA
+      lps.df<-rbind(lps.df,lp.df)
+    }
+  }
+  return(lps.df)
+}
