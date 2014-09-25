@@ -1,0 +1,66 @@
+cis.eQTL.select<-function(cross=cross,
+                          beststats=beststats,
+                          eqtls.wet=eqtls.wet,
+                          eqtls.dry=eqtls.dry,
+                          method="marker.proximity"){
+  ciseQTL.genes.out<-data.frame()
+  cat("\n", "through the",method ,"method, finding candidate genes for")
+  for (i in 1:length(beststats[,1])){
+    #get the markers outside the interval
+    chr.in<-as.numeric(beststats[i,"chromosome"])
+    qtl.id.in<-beststats$qtl.id[i]
+    print(qtl.id.in) #reporting progress
+    trt.in<-as.character(beststats$phenotype[beststats$qtl.id==qtl.id.in])
+    trt.in<-ifelse(strsplit(trt.in,"[.]")[[1]][2]=="dry","dry","wet")
+    trt.in[is.na(trt.in)]<-"wet"
+    mars<-as.data.frame(find.flanking(cross,
+                                      chr=c(chr.in,chr.in),
+                                      pos=c(ifelse(beststats[i,"lowCIpos"]==0,0,beststats[i,"lowCIpos"]),beststats[i,"hiCIpos"])))
+    low.mar<-as.character(mars[1,1])
+    hi.mar<-as.character(mars[2,2])
+    #get indices
+    low.index<-find.markerindex(cross,low.mar)
+    hi.index<-find.markerindex(cross,hi.mar)
+    index.correct<-c(0,as.numeric(nmar(cross)))
+    index.correct <-sum(index.correct[1:chr.in])
+    markers.in<-find.marker(cross,chr=chr.in, index=(low.index-index.correct):(hi.index-index.correct))
+    # get physical positions of markers
+    marker.pos.in<-marker.info[marker.info$Marker %in% markers.in,]
+    max.bp<-max(marker.pos.in$Col.Phys.Pos)
+    min.bp<-min(marker.pos.in$Col.Phys.Pos)
+    if(method=="marker.bounds"){
+      gene.info.in<-physpos.gene[physpos.gene$Chr==chr.in &
+                                   physpos.gene$Loc<=max.bp &
+                                   physpos.gene$Loc>=min.bp,]
+    }
+    if (method=="marker.proximity"){
+      genes.to.out<-genes.by.markers.out$gene.id[genes.by.markers.out$marker.id %in% markers.in]
+      gene.info.in<-physpos.gene[physpos.gene$Gene %in% genes.to.out,]
+    }
+    genes.in<-as.character(gene.info.in[complete.cases(gene.info.in),"Gene"])
+    all.eqtls<-rbind(eqtls.wet,eqtls.dry)
+    eqtl.wet.genes<-genes.in[genes.in %in% eqtls.wet$gene]
+    eqtl.dry.genes<-genes.in[genes.in %in% eqtls.dry$gene]
+    if(trt.in=="wet"){all.eqtl.genes<-eqtl.wet.genes}
+    if(trt.in=="dry"){all.eqtl.genes<-eqtl.dry.genes}
+    #determine the type of eqtl
+    eqtl.type<-as.character()
+    for (j in as.character(all.eqtl.genes)){
+      eqtl.in<-all.eqtls[all.eqtls$gene==j,]
+      test<-ifelse(length(eqtl.in[,1])>1,"both",
+                   ifelse(eqtl.in$chromosome==marker.pos.in$Chr[1] &
+                            eqtl.in$ci_low<=(max(marker.pos.in$pos)+5) &
+                            eqtl.in$ci_high>=(max(marker.pos.in$pos)-5)
+                          ,"cis","trans")
+      )
+      eqtl.type<-c(eqtl.type,test)
+    }
+    #exclude the only trans eqtl
+    all.eqtl.genes.df<-as.data.frame(all.eqtl.genes)
+    all.eqtl.genes.df$eqtl.type<-eqtl.type
+    genes.in.cis<-all.eqtl.genes.df[!all.eqtl.genes.df$eqtl.type=="trans",]
+    genes.in.cis$qtl<-qtl.ids[i]
+    ciseQTL.genes.out<-rbind(ciseQTL.genes.out,genes.in.cis)
+  }
+  return(ciseQTL.genes.out)
+}
