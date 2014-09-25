@@ -1,0 +1,62 @@
+covariate.scan<-function(beststats=beststats,
+                         cross=cross,
+                         bestmodel.types=bestmodel.types,
+                         candidates.byeqtl=candidates.byeqtl,
+                         qtl.ids=beststats$qtl.id,
+                         qtl.anova)
+{
+  all.out<-data.frame()
+  par(mfrow=c(1,1))
+  for (i in qtl.ids){
+    qtl.id.in<-i
+    pheno.in<-as.character(beststats$phenotype[beststats$qtl.id==qtl.id.in])
+    chr.in<-as.numeric(beststats$chromosome[beststats$qtl.id==qtl.id.in])
+    pos.in<-as.numeric(beststats$position[beststats$qtl.id==qtl.id.in])
+    mar.in<-find.marker(cross,chr=chr.in,pos=pos.in)
+    trt.in<-as.character(beststats$phenotype[beststats$qtl.id==qtl.id.in])
+    trt.in<-ifelse(strsplit(trt.in,"[.]")[[1]][2]=="dry","dry","wet")
+    trt.in[is.na(trt.in)]<-"wet"
+    cov.chr<-summary(bestmodels[[pheno.in]])$chr
+    cov.pos<-summary(bestmodels[[pheno.in]])$pos
+    model.info<-as.character(bestmodel.types$best.model.type[rownames(bestmodel.types)==pheno.in])
+    #get the name of the marker under the qtl and remove it
+    if(length(cov.chr)>1){
+      cov.markers<-find.marker(cross,chr=cov.chr,pos=cov.pos)
+      cov.markers<-cov.markers[!cov.markers==mar.in]
+      cov.markers.topull<-paste(cov.markers,"BB",sep=":")
+      genoprobs<-pull.genoprob(cross,omit.first.prob=T)
+      genoprobs.ascov<-as.data.frame(genoprobs[,cov.markers.topull])
+      if (model.info=="add.covar"){
+        genoprobs.ascov<-cbind(genoprobs.ascov,cyto.covar)
+      }
+    }
+    if(model.info=="add.covar" & length(cov.chr)==1){
+      genoprobs.ascov<-cyto.covar
+    }
+    if (model.info=="no.covar"& length(cov.chr)==1){
+      genoprobs.ascov<-data.frame(rep(1,341))
+    }    
+    s1.full<-scanone(cross,pheno.col=pheno.in,method="hk",addcovar=genoprobs.ascov)
+    s1.est<-as.data.frame(s1.full)
+    s1.est<-s1.est[rownames(s1.est)==mar.in,"lod"]
+    plot(s1.full, chr=chr.in, main=qtl.id.in)
+    genes.to.run<-as.character(candidates.byeqtl$all.eqtl.genes[candidates.byeqtl$qtl==qtl.id.in])
+    for (j in 1:length(genes.to.run)){
+      gene.in<-genes.to.run[j]
+      geneexp.culled<-geneexp[,c("treatment","line",gene.in)]
+      geneexp.culled<-geneexp.culled[geneexp.culled$treatment==trt.in,]
+      names(idnames)[2]<-"line"
+      exp.covars<-merge(idnames,geneexp.culled, by="line", all=T)
+      exp.cov<-data.frame(exp.covars[,4])
+      all.cov<-cbind(genoprobs.ascov,exp.cov)
+      s1.cov<-scanone(cross,pheno.col=pheno.in,method="hk",addcovar=all.cov)
+      s1.cov.est<-as.data.frame(s1.cov)
+      s1.cov.est<-s1.cov.est[rownames(s1.cov.est)==mar.in,"lod"]
+      plot(s1.cov,col=j,chr=chr.in,lty=2,add=T)
+      output<-cbind(qtl.id.in,gene.in,pheno.in,chr.in,pos.in,mar.in,trt.in,model.info,s1.est,s1.cov.est)
+      all.out<-rbind(all.out,output)
+    }
+  }
+  return(all.out)
+}
+
