@@ -95,3 +95,4 @@ stepwiseqtl.summary<-function(cross, phes, max.qtls,pens, covar, printout, drop=
   write.csv(stats_out, file="stepwisesummary.stats.csv", row.names=F)
   return(model.out)
 }
+
