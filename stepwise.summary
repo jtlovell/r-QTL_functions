@@ -37,7 +37,7 @@ stepwiseqtl.summary<-function(cross, phes, max.qtls,pens, covar, printout, ci.me
                 method="hk")
     #determine the number of terms/qtl in the model
     nqtls<-nqtl(stepout)
-    nterms<-sum(countqtlterms(formula(stepout)))
+    nterms<-sum(countqtlterms(formula(stepout), ignore.covar=F))
     ncovar<-length(covar)
     #extract information if the qtl model has multiple qtls/covariates
     if(nterms>1){
