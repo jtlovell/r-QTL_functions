@@ -1,6 +1,17 @@
 stepwiseqtl.summary<-function(cross, phes, max.qtls,pens, covar, printout, ci.method, drop=1, prob=.9){
   #set up the environment
-  stats_out<-data.frame()
+  if(class(cross)=="riself" | class(cross)=="bc"){
+    stats_out<-data.frame(phenotype=character(),chromosome=numeric(),position=numeric(),
+                          df=numeric(),type3SS=numeric(),LOD=numeric(),perc.var=numeric(),Fstat=numeric(),P.chi2=numeric(),P.F=numeric(),
+                          effect.estimate=numeric(),effect.SE=numeric(),effect.t=numeric(),
+                          lowCImarker=character(), hiCImarker=character(),
+                          lowCIpos=character(), hiCIpos=character())
+  }else{
+    stats_out<-data.frame(phenotype=character(),chromosome=numeric(),position=numeric(),
+                          df=numeric(),type3SS=numeric(),LOD=numeric(),perc.var=numeric(),Fstat=numeric(),P.chi2=numeric(),P.F=numeric(),
+                          lowCImarker=character(), hiCImarker=character(),
+                          lowCIpos=character(), hiCIpos=character())
+  }
   statcols<-names(stats_out)
   if(printout==T){cat("conducting stepwise QTL model selection","\n")}
   statsout<-data.frame()
@@ -68,8 +79,16 @@ stepwiseqtl.summary<-function(cross, phes, max.qtls,pens, covar, printout, ci.me
         chrs<-c(chrs,rep(NA,countqtlterms(formula(stepout))[4]))
         pos<- c(pos,rep(NA,countqtlterms(formula(stepout))[4]))
       }
-      stats<-data.frame(rep(i,nterms),chrs,pos,fit$result.drop[1:nterms,],ests_out,cis)
-      colnames(stats)<-statcols
+      
+      if(class(cross)=="riself" | class(cross)=="bc"){
+        ests_out<-summary(fit)$ests[2:(nqtls+1),1:3]
+        stats<-data.frame(rep(i,nterms),chrs,pos,fit$result.drop[1:nterms,],ests_out,cis)
+        colnames(stats)<-statcols
+      }else{
+        stats<-data.frame(rep(i,nterms),chrs,pos,fit$result.drop[1:nterms,],cis)
+        colnames(stats)<-statcols
+      }
+
     }else{
       cis<-data.frame()
       for (j in 1:nqtls){
@@ -83,7 +102,7 @@ stepwiseqtl.summary<-function(cross, phes, max.qtls,pens, covar, printout, ci.me
         highposition<-ciout[3,2]
         cis<-rbind(cis,cbind(lowmarker,highmarker,lowposition,highposition))
       }
-      if(class(cross)=="Riself" | class(cross)=="bc"){
+      if(class(cross)=="riself" | class(cross)=="bc"){
         ests_out<-summary(fit)$ests[2:(nqtls+1),1:3]
         stats<-data.frame(c(i,stepout$chr[1],stepout$pos[1],
                             as.numeric(fit$result.full[1,c(1,2,4,5,3,6,7)]),as.numeric(ests_out),cis[1,]))
