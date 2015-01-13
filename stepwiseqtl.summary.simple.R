@@ -1,4 +1,4 @@
-stepwiseqtl.summary.simple<-function(cross, model.in, phe, covar.in=NULL){
+stepwiseqtl.summary.simple<-function(cross, model.in, phe, covar=NULL){
   #set up the environment
   if(class(cross)[1]=="riself" | class(cross)[1]=="bc"){
     stats_out<-data.frame(phenotype=character(),chromosome=numeric(),position=numeric(),
@@ -18,7 +18,11 @@ stepwiseqtl.summary.simple<-function(cross, model.in, phe, covar.in=NULL){
     }
   }
   statcols<-names(stats_out)
-  stepout<-models.out[[phe]]
+  if(class(model.in)=="list")
+  {
+    stepout<-model.in[[phe]]
+  }else{stepout<-model.in}
+  
   if(nqtl(stepout)==0){
     if(printout){cat(paste(" ******* phenotype",phe,"has a null qtl model","\n"))}
     next
@@ -70,12 +74,12 @@ stepwiseqtl.summary.simple<-function(cross, model.in, phe, covar.in=NULL){
       pos<- c(pos,rep(NA,countqtlterms(formula(stepout))[4]))
     }
     
-    if(class(cross)[1]=="riself" | class(cross)[1]=="bc"){
-      ests_out<-summary(fit)$ests[2:(nqtls+1),1:3]
-      stats<-data.frame(rep(i,nterms),chrs,pos,fit$result.drop[1:nterms,],ests_out,cis)
+    if(class(cross)[1]=="riself"){
+      ests_out<-summary(fit)$ests[2:(nterms+1),1:3]
+      stats<-data.frame(rep(phe,nterms),chrs,pos,fit$result.drop[1:nterms,],ests_out,cis)
       colnames(stats)<-statcols
     }else{
-      stats<-data.frame(rep(i,nterms),chrs,pos,fit$result.drop[1:nterms,],cis)
+      stats<-data.frame(rep(phe,nterms),chrs,pos,fit$result.drop[1:nterms,],cis)
       colnames(stats)<-statcols
     }
   }else{
@@ -93,10 +97,10 @@ stepwiseqtl.summary.simple<-function(cross, model.in, phe, covar.in=NULL){
     }
     if(class(cross)[1]=="riself" | class(cross)[1]=="bc"){
       ests_out<-summary(fit)$ests[2:(nqtls+1),1:3]
-      stats<-data.frame(c(i,stepout$chr[1],stepout$pos[1],
+      stats<-data.frame(c(phe,stepout$chr[1],stepout$pos[1],
                           as.numeric(fit$result.full[1,c(1,2,4,5,3,6,7)]),as.numeric(ests_out),cis[1,]))
     }else{
-      stats<-data.frame(c(i,stepout$chr[1],stepout$pos[1],
+      stats<-data.frame(c(phe,stepout$chr[1],stepout$pos[1],
                           as.numeric(fit$result.full[1,c(1,2,4,5,3,6,7)]),cis[1,]))
     }
     ests_out<-summary(fit)$ests[2:(nqtls+1),1:3]
