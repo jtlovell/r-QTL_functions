@@ -44,6 +44,7 @@ plot.qtlci<-function(  cross,
   chr.beg<-rep(0,length(chrs))
   chr.ys<-rep(num1,,each=nchr(cross))
   chr.info<-data.frame(chr.len,chrs,chr.beg, chr.ys)
+  colnames(chr.info)[2]<-"chr"
   
   #make the plot
   if(plottype=="lines"){
