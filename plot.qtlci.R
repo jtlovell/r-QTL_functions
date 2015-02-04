@@ -21,7 +21,6 @@ plot.qtlci<-function(  cross,
   colnames(toplot)<-c("phe","chr","pos.left","pos","pos.right","numnames")
   phe1<-unique(toplot$phe)
   num1<-1:length(unique(toplot$phe))
-  numnames<-phenum
   
   toplot$pos<-as.numeric(as.character(toplot$pos))
   toplot$pos.left<-as.numeric(as.character(toplot$pos.left))
