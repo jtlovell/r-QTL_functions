@@ -1,3 +1,26 @@
+# Author. JT Lovell
+# Version. 2.1
+# The plot.qtlci function takes QTL models and statistics and makes plots
+# These plots are split by phenotype and chromosome to illustrate colocalization 
+
+# The function takes four main datasets
+# cross- the R/qtl cross object 
+# toplot- a dataframe of statistics. This needs to include
+#       phenotype names,
+#       chromosomes,
+#       point estimate (cM),
+#       upper and lower confidence interval bounds (cM)
+# models (if you want to make lod profile plots)-
+#       this needs to be a list of QTL models that have associated LodProfiles
+#       most easily generated from stepwiseQTL w/ keep.lodprofile=T
+
+# In the QTL workflow associated with this function, these plots can directly utilize output from:
+#       summary.stepwiseqt (part VI)-- this is the toplot file
+#       stepwiseqtl(part III)-- this is the list of models for models
+
+# The plottype argument asks if you want to plot:
+#       lines: confidence interval lines around the point estimate
+#       lodprofile: lodprofiles split across chromosomes and phenotypes
 plot.qtlci<-function(  cross,
                        toplot,
                        phenames,
@@ -53,11 +76,11 @@ plot.qtlci<-function(  cross,
     ggplot(marker.info)+
       geom_segment(aes(x=pos, xend = pos, y=seg.start, yend =seg.end), alpha=.5, size=.1)+ #lines for each confidence interval
       geom_segment(aes(x=chr.beg, xend = chr.len, y=chr.ys, yend =chr.ys),
-                   alpha=.1, data=chr.info)+ #faint lines across each phenotype
-      geom_point(aes(x=pos,y=numnames), 
-                 data=toplot)+ #points for each QTL estimate
+                   alpha=.05, data=chr.info)+ #faint lines across each phenotype
       geom_segment(aes(x=pos.left, xend=pos.right, yend=numnames,y=numnames), 
-                   data=toplot)+
+                   data=toplot, size=2, ,alpha=.5)+
+      geom_point(aes(x=pos,y=numnames, color=phe),size=3, 
+                 data=toplot)+ #points for each QTL estimate
       facet_grid(.~chr, scale="free_x",space="free_x")+ #split by chromosome
     
       theme(
