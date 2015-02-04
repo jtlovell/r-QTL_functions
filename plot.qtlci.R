@@ -96,7 +96,7 @@ plot.qtlci<-function(  cross,
       if(standardize){
         ggplot(lpdf, aes(x=pos,y=standardized.lod.profile, group=qtlname, color=phenotype))+
           geom_line()+
-          facet_grid(phenotype~chr, scale="free_x",space="free_x")+
+          facet_grid(phenotype~chr, scale="free",space="free_x")+
           theme(
             panel.background = element_rect(fill = "ghostwhite")
             ,panel.grid.major = element_blank()
@@ -116,7 +116,7 @@ plot.qtlci<-function(  cross,
 
         ggplot(lpdf, aes(x=pos,y=lod.profile, group=qtlname, color=chr))+
           geom_line()+
-          facet_grid(phenotype~chr, scale="free_x",space="free_x")+
+          facet_grid(phenotype~chr, scale="free",space="free_x")+
           theme(
             panel.background = element_rect(fill = "ghostwhite")
             ,panel.grid.major = element_blank()
