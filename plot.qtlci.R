@@ -1,85 +1,87 @@
 plot.qtlci<-function(  cross,
+                       toplot,
                        phenames,
                        chr,
                        pos.left,
                        pos.center,
                        pos.right,
-                       cat,
                        models=NULL,
                        plottype="lines",
-                       standardize=TRUE,
-                       legend.title){
+                       standardize=TRUE){
   #get other custom functions in
   roundUp <- function(x, nice=c(1,2,4,5,6,8,10)) {
     if(length(x) != 1) stop("'x' must be of length 1")
     10^floor(log10(x)) * nice[[which(x <= 10^floor(log10(x)) * nice)[[1]]]]
   }
-
-  toplot<-data.frame(phenames,chr,pos.left,pos.center,pos.right,cat)
-  toplot<-toplot[complete.cases(toplot),]
-  #make ordered numerical categorization for each phenotype
-  toplot<-toplot[with(toplot, order(cat, phenames)), ]
-  numnames<-as.numeric(toplot$phenames)
-  toplot$phenames <- factor(toplot$phenames, 
-                            levels = unique(toplot$phenames)[order(unique(toplot$phenames))])
-  toplot$cat <- factor(toplot$cat, 
-                       levels = unique(toplot$cat)[order(unique(toplot$cat))])
-  phe1<-unique(toplot$phenames)
-  num1<-length(unique(toplot$phenames)):1
-  numnames<-sapply(toplot$phenames,function(x) num1[phe1==x])
-  toplot$numnames<-numnames
-
+  library("scales")
+  number_ticks <- function(n) {function(limits) pretty(limits, n)}
+  
+  toplot<-toplot[,c(phenames,chr,pos.left,pos.center,pos.right)]
+  toplot$numnames<-as.numeric(toplot[,phenames])
+  colnames(toplot)<-c("phe","chr","pos.left","pos","pos.right","numnames")
+  phe1<-unique(toplot$phe)
+  num1<-1:length(unique(toplot$phe))
+  numnames<-phenum
+  
+  toplot$pos<-as.numeric(as.character(toplot$pos))
+  toplot$pos.left<-as.numeric(as.character(toplot$pos.left))
+  toplot$pos.right<-as.numeric(as.character(toplot$pos.right))
+  
   #make dataset for marker ticks
-  marker.info<-data.frame(pull.map(cross, as.table=T))
-  seg.ht<-(max(toplot$numnames)-1)*.05
-  seg.start<-1-(max(toplot$numnames)*.1)
-  seg.end<-seg.start-seg.ht
+  marker.info<-data.frame(pull.map(cross, as.table=T))[,1:2]
+  colnames(marker.info)<-c("chr","pos")
+  seg.end<-1-1/(max(toplot$numnames)*.25)
+  seg.start<-seg.end-4/(max(toplot$numnames))
   marker.info$seg.end<-seg.end
   marker.info$seg.start<-seg.start
+  marker.info$chr<-as.numeric(marker.info$chr)
   
   #make dataset for axes info
   chr.ys<-length(num1)
-  chr.len<-rep(as.numeric(chrlen(cross)),length(num1))
-  chrs<-rep(as.numeric(names(chrlen(cross))),length(num1))
+  if(class(cross)[1]=="4way"){
+    chr.len<-rep(as.numeric(chrlen(cross)[1,]),length(num1))
+  }else{
+    chr.len<-rep(as.numeric(chrlen(cross)),length(num1))
+  }
+  chrs<-rep(as.numeric(chrnames(cross)),length(num1))
   chr.beg<-rep(0,length(chrs))
-  chr.ys<-rep(num1,,each=nchr(cross))
+  chr.ys<-rep(num1,each=nchr(cross))
   chr.info<-data.frame(chr.len,chrs,chr.beg, chr.ys)
   colnames(chr.info)[2]<-"chr"
   
   #make the plot
   if(plottype=="lines"){
     ggplot(marker.info)+
-      geom_segment(aes(x=pos, xend = pos, y=seg.start, yend =seg.end))+ #lines for each confidence interval
+      geom_segment(aes(x=pos, xend = pos, y=seg.start, yend =seg.end), alpha=.5, size=.1)+ #lines for each confidence interval
       geom_segment(aes(x=chr.beg, xend = chr.len, y=chr.ys, yend =chr.ys),
                    alpha=.1, data=chr.info)+ #faint lines across each phenotype
-      geom_point(aes(x=pos.center,y=numnames, col=cat), 
+      geom_point(aes(x=pos,y=numnames), 
                  data=toplot)+ #points for each QTL estimate
-      geom_segment(aes(x=pos.left, xend=pos.right, yend=numnames,y=numnames,col=cat), 
-                   data=toplot)+ #lines for each marker
+      geom_segment(aes(x=pos.left, xend=pos.right, yend=numnames,y=numnames), 
+                   data=toplot)+
       facet_grid(.~chr, scale="free_x",space="free_x")+ #split by chromosome
-      
-      theme_bw() +
+    
       theme(
-        plot.background = element_blank()
+        panel.background = element_rect(fill = "ghostwhite")
         ,panel.grid.major = element_blank()
         ,panel.grid.minor = element_blank()
         ,panel.border = element_blank()
         ,strip.background = element_blank()
+        ,axis.text.x = element_blank()
+        ,axis.ticks = element_blank()
+        ,axis.text.y = element_text(colour="black")
       ) +
-      
-      scale_color_discrete(name = legend.title)+
+      theme(legend.position="none")+
       ggtitle("chromosome")+
-      theme(axis.line = element_line(color = 'black'))+
       #change axes
       scale_y_continuous("phenotypes",labels=phe1, breaks=num1)+
-      scale_x_continuous("mapping position (cM)", 
-                         breaks=seq(from=0,to=roundUp(max(marker.info$pos)),by=roundUp(max(marker.info$pos))/4), 
-                         labels=c(0,roundUp(max(marker.info$pos))/4,roundUp(max(marker.info$pos))/2,"",""))
+      scale_x_continuous("")
   }else{
     if(plottype=="lodprofile"){
       #extract lod profiles
       lpdf<-data.frame()
-      for(i in names(models)){
+      for.model<-intersect(as.character(unique(stats$phe)), namesforlist)
+      for(i in for.model){
         toext<-models[[i]]
         all.lps<-attr(toext, "lodprofile")
         std.lps<-sapply(all.lps,function(x) x$lod/max(x$lod))
@@ -93,38 +95,40 @@ plot.qtlci<-function(  cross,
       lpdf$chr <- factor(lpdf$chr, 
                                 levels = 1:nchr(cross))
       if(standardize){
-        ggplot(lpdf, aes(x=pos,y=standardized.lod.profile, group=qtlname, color=chr))+
+        ggplot(lpdf, aes(x=pos,y=standardized.lod.profile, group=qtlname, color=phenotype))+
           geom_line()+
           facet_grid(phenotype~chr, scale="free_x",space="free_x")+
-          theme_bw() +
           theme(
-            plot.background = element_blank()
+            panel.background = element_rect(fill = "ghostwhite")
             ,panel.grid.major = element_blank()
             ,panel.grid.minor = element_blank()
             ,panel.border = element_blank()
             ,strip.background = element_blank()
+            ,axis.text.x = element_blank()
+            ,axis.ticks.x = element_blank()
+            ,axis.text.y = element_text(colour="black")
           ) +
-          theme(strip.text.y = element_text(angle = 0))+
+          theme(strip.text.y = element_text(angle = 0,hjust=0))+
           theme(legend.position="none")+
           ggtitle("chromosome")+
           theme(axis.line = element_line(color = 'black'))+
-          scale_y_continuous(breaks=c(0,.5,1), 
-                             labels=c(0,.5,""))
+          scale_y_continuous(breaks=number_ticks(2))
       }else{
-        library("scales")
-        number_ticks <- function(n) {function(limits) pretty(limits, n)}
+
         ggplot(lpdf, aes(x=pos,y=lod.profile, group=qtlname, color=chr))+
           geom_line()+
-          facet_grid(phenotype~chr, scale="free")+
-          theme_bw() +
+          facet_grid(phenotype~chr, scale="free_x",space="free_x")+
           theme(
-            plot.background = element_blank()
+            panel.background = element_rect(fill = "ghostwhite")
             ,panel.grid.major = element_blank()
             ,panel.grid.minor = element_blank()
             ,panel.border = element_blank()
             ,strip.background = element_blank()
+            ,axis.text.x = element_blank()
+            ,axis.ticks.x = element_blank()
+            ,axis.text.y = element_text(colour="black")
           ) +
-          theme(strip.text.y = element_text(angle = 0))+
+          theme(strip.text.y = element_text(angle = 0,hjust=0))+
           theme(legend.position="none")+
           ggtitle("chromosome")+
           theme(axis.line = element_line(color = 'black'))+
