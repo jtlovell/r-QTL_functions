@@ -13,7 +13,7 @@ stepwiseqtl.summary.simple.4way<-function(step, phename=1, cross=fake.4way, cova
   ncovar<-length(covar)
   #extract information if the qtl model has multiple qtls/covariates
   if(nterms==1){
-    ciout<-lodint(stepout,qtl.index=j, expandtomarkers=F, drop=1.5)
+    ciout<-lodint(stepout,qtl.index=1, expandtomarkers=F, drop=1.5)
     lowmarker<-rownames(ciout)[1]
     highmarker<-rownames(ciout)[3]
     lowposition<-ciout[1,2]
