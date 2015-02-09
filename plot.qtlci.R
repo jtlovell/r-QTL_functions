@@ -102,7 +102,7 @@ plot.qtlci<-function(  cross,
     if(plottype=="lodprofile"){
       #extract lod profiles
       lpdf<-data.frame()
-      for.model<-intersect(as.character(unique(stats$phe)), namesforlist)
+      for.model<-intersect(as.character(unique(toplot$phe)), namesforlist)
       for(i in for.model){
         toext<-models[[i]]
         all.lps<-attr(toext, "lodprofile")
