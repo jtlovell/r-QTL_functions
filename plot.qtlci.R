@@ -74,7 +74,7 @@ plot.qtlci<-function(  cross,
   #make the plot
   if(plottype=="lines"){
     ggplot(marker.info)+
-      geom_segment(aes(x=pos, xend = pos, y=seg.start, yend =seg.end), alpha=.5, size=.1)+ #lines for each confidence interval
+      geom_rug(aes(x=pos),alpha=.2)+ #lines for each confidence interval
       geom_segment(aes(x=chr.beg, xend = chr.len, y=chr.ys, yend =chr.ys),
                    alpha=.05, data=chr.info)+ #faint lines across each phenotype
       geom_segment(aes(x=pos.left, xend=pos.right, yend=numnames,y=numnames), 
@@ -117,8 +117,12 @@ plot.qtlci<-function(  cross,
       lpdf$chr <- factor(lpdf$chr, 
                                 levels = 1:nchr(cross))
       if(standardize){
-        ggplot(lpdf, aes(x=pos,y=standardized.lod.profile, group=qtlname, color=phenotype))+
-          geom_line()+
+        marker.info$phenotype<-unique(lpdf$phenotype)[length(unique(lpdf$phenotype))]
+        marker.info$phenotype<-unique(lpdf$phenotype)[length(unique(lpdf$phenotype))]
+        marker.info$chr<-as.numeric(as.character(marker.info$chr))
+        ggplot(lpdf)+
+          geom_line(aes(x=pos,y=standardized.lod.profile, group=qtlname, color=phenotype))+
+          geom_rug(data=marker.info,aes(x=pos),ticksize=.1,alpha=.2)+ #lines for each confidence interval
           facet_grid(phenotype~chr, scale="free",space="free_x")+
           theme(
             panel.background = element_rect(fill = "ghostwhite")
@@ -133,12 +137,16 @@ plot.qtlci<-function(  cross,
           theme(strip.text.y = element_text(angle = 0,hjust=0))+
           theme(legend.position="none")+
           ggtitle("chromosome")+
-          theme(axis.line = element_line(color = 'black'))+
-          scale_y_continuous(breaks=number_ticks(2))
+          #theme(axis.line = element_line(color = 'black'))+
+          scale_y_continuous(breaks=number_ticks(2))+
+          scale_x_continuous("")
       }else{
-
-        ggplot(lpdf, aes(x=pos,y=lod.profile, group=qtlname, color=chr))+
-          geom_line()+
+        marker.info$phenotype<-unique(lpdf$phenotype)[length(unique(lpdf$phenotype))]
+        marker.info$chr<-as.numeric(as.character(marker.info$chr))
+        lpdf$chr<-as.numeric(as.character(lpdf$chr))
+        ggplot(lpdf)+
+          geom_line(aes(x=pos,y=lod.profile, group=qtlname, color=phenotype))+
+          geom_rug(data=marker.info,aes(x=pos),ticksize=.1,alpha=.2)+ #lines for each confidence interval
           facet_grid(phenotype~chr, scale="free",space="free_x")+
           theme(
             panel.background = element_rect(fill = "ghostwhite")
@@ -153,8 +161,9 @@ plot.qtlci<-function(  cross,
           theme(strip.text.y = element_text(angle = 0,hjust=0))+
           theme(legend.position="none")+
           ggtitle("chromosome")+
-          theme(axis.line = element_line(color = 'black'))+
-          scale_y_continuous(breaks=number_ticks(2))
+          #theme(axis.line = element_line(color = 'black'))+
+          scale_y_continuous(breaks=number_ticks(2))+
+          scale_x_continuous("")
       }
     }else{cat("do not know how to make plottype",plottype)}
   } 
