@@ -30,7 +30,9 @@ plot.qtlci<-function(  cross,
                        pos.right,
                        models=NULL,
                        plottype="lines",
-                       standardize=TRUE){
+                       standardize=TRUE,
+                       ci.thickness=1.5,
+                       point.size=2){
   #get other custom functions in
   roundUp <- function(x, nice=c(1,2,4,5,6,8,10)) {
     if(length(x) != 1) stop("'x' must be of length 1")
@@ -70,7 +72,7 @@ plot.qtlci<-function(  cross,
   chr.ys<-rep(num1,each=nchr(cross))
   chr.info<-data.frame(chr.len,chrs,chr.beg, chr.ys)
   colnames(chr.info)[2]<-"chr"
-  
+  toplot<-toplot[complete.cases(toplot),]
   #make the plot
   if(plottype=="lines"){
     ggplot(marker.info)+
@@ -78,8 +80,8 @@ plot.qtlci<-function(  cross,
       geom_segment(aes(x=chr.beg, xend = chr.len, y=chr.ys, yend =chr.ys),
                    alpha=.05, data=chr.info)+ #faint lines across each phenotype
       geom_segment(aes(x=pos.left, xend=pos.right, yend=numnames,y=numnames), 
-                   data=toplot, size=2, ,alpha=.5)+
-      geom_point(aes(x=pos,y=numnames, color=phe),size=3, 
+                   data=toplot, size=ci.thickness, ,alpha=.5)+
+      geom_point(aes(x=pos,y=numnames, color=phe),size=point.size, 
                  data=toplot)+ #points for each QTL estimate
       facet_grid(.~chr, scale="free_x",space="free_x")+ #split by chromosome
     
@@ -102,7 +104,7 @@ plot.qtlci<-function(  cross,
     if(plottype=="lodprofile"){
       #extract lod profiles
       lpdf<-data.frame()
-      for.model<-intersect(as.character(unique(toplot$phe)), namesforlist)
+      for.model<-as.character(unique(toplot$phe))
       for(i in for.model){
         toext<-models[[i]]
         all.lps<-attr(toext, "lodprofile")

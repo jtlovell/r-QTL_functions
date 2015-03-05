@@ -1,4 +1,4 @@
-stepwiseqtl.summary.simple<-function(cross, model.in, phe, covar=NULL){
+stepwiseqtl.summary.simple<-function(cross, model.in, phe, covar=NULL, ci.method="drop", drop=1.5){
   #set up the environment
   if(class(cross)[1]=="riself" | class(cross)[1]=="bc"){
     stats_out<-data.frame(phenotype=character(),chromosome=numeric(),position=numeric(),
@@ -47,7 +47,10 @@ stepwiseqtl.summary.simple<-function(cross, model.in, phe, covar=NULL){
     #calculate confidence intervals for each qtl
     for (j in 1:nqtls){
       attr(stepout, "lodprofile")
-      ciout<-lodint(stepout,qtl.index=j, expandtomarkers=F, drop=1.5)
+      if(ci.method=="drop"){ciout<-lodint(stepout,qtl.index=j, expandtomarkers=F, drop=drop)
+      }else{
+        if(ci.method=="bayes"){ciout<-bayesint(stepout,qtl.index=j, expandtomarkers=F, prob=prob)}
+      }
       lowmarker<-rownames(ciout)[1]
       highmarker<-rownames(ciout)[3]
       lowposition<-ciout[1,2]
