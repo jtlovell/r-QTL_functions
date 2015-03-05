@@ -1,4 +1,4 @@
-stepwiseqtl.summary.simple<-function(cross, model.in, phe, covar=NULL, ci.method="drop", drop=1.5){
+stepwiseqtl.summary.simple<-function(cross, model.in, phe, covar=NULL, ci.method="drop", drop=1.5, plot=F){
   #set up the environment
   if(class(cross)[1]=="riself" | class(cross)[1]=="bc"){
     stats_out<-data.frame(phenotype=character(),chromosome=numeric(),position=numeric(),
@@ -28,7 +28,9 @@ stepwiseqtl.summary.simple<-function(cross, model.in, phe, covar=NULL, ci.method
     next
   }
   #plot the lod profile to the window
-  plotLodProfile(stepout,main=paste(phe,"formula: ", formula(stepout)))
+  if(plot){
+    plotLodProfile(stepout,main=paste(phe,"formula: ", formula(stepout)))
+  }
   #fit the qtl model
   fit<-fitqtl(cross,
               pheno.col=phe,
