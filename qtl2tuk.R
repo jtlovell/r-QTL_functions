@@ -15,7 +15,6 @@ qtl2df<-function(cross,chrs, poss, phe){
 }
 
 qtl2tuk<-function(cross, n.qtls, chrs, poss, phe){
-  n.qtls=2
   out<-list()
   for(i in 1:n.qtls){
     chr=chrs[i]; pos=poss[i]
@@ -27,8 +26,13 @@ qtl2tuk<-function(cross, n.qtls, chrs, poss, phe){
   
   form<-as.formula(paste(phe,"~",paste(qtls,collapse="+")))
   av<-aov(form,data=df)
-  lsm<-lsmeans(av,specs=colnames(df)[3])
-  cld.out<-cld(lsm)
+  cld.out<-list()
+  for(i in qtls){
+    lsm<-lsmeans(av,specs=i)
+    cld.out[[i]]<-cld(lsm)
+  }
+  
+  
   cld.out
 }
 
