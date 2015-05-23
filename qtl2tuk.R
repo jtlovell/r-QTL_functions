@@ -14,25 +14,33 @@ qtl2df<-function(cross,chrs, poss, phe){
   return(df)
 }
 
-qtl2tuk<-function(cross, n.qtls, chrs, poss, phe){
+qtl2tuk<-function(cross, chrs, poss, phe, covar=NULL, wt=NULL){
+  n.qtls<-length(chrs)
   out<-list()
   for(i in 1:n.qtls){
     chr=chrs[i]; pos=poss[i]
     out[[i]]<-qtl2df(cross=cross, chrs=chr, poss=pos, phe=phe)
   }
-  library(reshape)
   df<-Reduce(function(...) merge(..., by=c("id",phe),all=T), out)
+  if(!is.null(covar)){
+    df<-data.frame(df,covar)
+  }
   qtls<-colnames(df)[-which(colnames(df) %in% c("id",phe))]
-  
   form<-as.formula(paste(phe,"~",paste(qtls,collapse="+")))
-  av<-aov(form,data=df)
+  av<-lm(form,data=df)
   cld.out<-list()
   for(i in qtls){
-    lsm<-lsmeans(av,specs=i)
-    cld.out[[i]]<-cld(lsm)
+    if(is.null(wt)){
+      lsm<-lsmeans(av,specs=i)
+    }else{
+      lsm<-lsmeans(av,specs=i, weights=wt)
+    }
+    if(length(unique(df[,i]))<3){
+      cld.out[[i]]<-lsm
+    }else{
+      cld.out[[i]]<-cld(lsm)
+    }
   }
-  
-  
   cld.out
 }
 
