@@ -1,4 +1,4 @@
-stepwiseqtl.summary.simple<-function(cross, model.in, phe, covar=NULL, ci.method="drop", drop=1.5, plot=FALSE, printout=TRUE){
+stepwiseqtl.summary.simple<-function(cross, model.in, phe, covar=NULL, ci.method="drop", drop=1.5, plot=FALSE, printout=TRUE, prob=.9){
   #set up the environment
   if(class(cross)[1]=="riself" | class(cross)[1]=="bc"){
     stats_out<-data.frame(phenotype=character(),chromosome=numeric(),position=numeric(),
