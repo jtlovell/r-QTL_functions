@@ -17,11 +17,11 @@
 
 
 plotMultiQTL<-function(cross, stats=NULL, phes=NULL,chrs=NULL, peak=NULL, right=NULL, left=NULL, cols="black", 
-                       chr.subset=NULL, ylabelcex=.5, rugsize=1,
-                       pointsize=1, pointshape=1,linetype=1,linethickness=1,
+                       chr.subset=NULL, ylabelcex=NULL, rugsize=NULL,
+                       pointsize=NULL, pointshape=19,linetype=1,linethickness=1,
                        plotQTLdensity=TRUE, binwidth=1, mark.epi=FALSE, 
-                       adj.ylabsize=TRUE, colbychr=TRUE, palette=terrain.colors, 
-                       outline=FALSE, background=FALSE, title="QTL position plot"){
+                       colbychr=TRUE, palette=rainbow, 
+                       outline=FALSE, background=TRUE, title="QTL position plot"){
   #set up env.
   if(!is.null(chr.subset)){
     cross<-subset(cross, chr=chr.subset)
@@ -37,20 +37,20 @@ plotMultiQTL<-function(cross, stats=NULL, phes=NULL,chrs=NULL, peak=NULL, right=
   for(i in c("chromosome","position","lowCIpos","hiCIpos")){
     stats[,i]<-as.numeric(as.character(stats[,i]))
   }
-  a<-max(sapply(as.character(unique(stats$phenotype)),nchar))/2.5
+  
   nqtl<-dim(stats)[1]
   nphes<-length(unique(stats$phenotype))
   if(is.null(rugsize)){
-    rugsize<-(1/nphes)+.01
+    rugsize<-(1/(nphes^2))+.01
   }
-  if(adj.ylabsize){
-    ylab.adj<-(1/(nphes))+.1
-    par(mar=c(5,4,4,2)+.1)
-  }else{
-    ylab.adj<-.5
-    par(mar=c(5,a,4,2)+.1)
+  if(is.null(pointsize)){
+    pointsize<-(1/(1+(nphes*.01)))
   }
-  
+  if(is.null(ylabelcex)){
+    ylab.adj<-(1/(1+(nphes*.015)))
+  }
+  a<-(sqrt(2*max(sapply(as.character(unique(stats$phenotype)),nchar)))*(ylab.adj^2))+4
+  par(mar=c(5,a,4,2)+.1)
   map<-pull.map(cross, as.table=T)
   #determine plotting positions
   totlen<-sum(chrlen(cross))
