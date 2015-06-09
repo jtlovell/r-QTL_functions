@@ -15,12 +15,17 @@
 # background=FALSE: put a very transparent rectangle over each chromosome
 # title="QTL position plot": title of the plot
 
-plotMultiQTL<-function(cross, stats=NULL, phes=NULL,chrs=NULL, peak=NULL, right=NULL, left=NULL, cols="black",  
+plotMultiQTL<-function(cross, stats=NULL, phes=NULL,chrs=NULL, peak=NULL, right=NULL, left=NULL, cols="black", 
+                       chr.subset=NULL, ylabelcex=.5, rugsize=1,
                        pointsize=1, pointshape=1,linetype=1,linethickness=1,
                        plotQTLdensity=TRUE, binwidth=1, mark.epi=FALSE, 
                        adj.ylabsize=TRUE, colbychr=TRUE, palette=terrain.colors, 
                        outline=FALSE, background=FALSE, title="QTL position plot"){
   #set up env.
+  if(!is.null(chr.subset)){
+    cross<-subset(cross, chr=chr.subset)
+    stats<-stats[stats$chromosome==chr.subset,]
+  }
   pal<-palette(nchr(cross))
   if(is.null(stats)){
     stats<-data.frame(phes, chrs, peak, right, left)
@@ -34,6 +39,9 @@ plotMultiQTL<-function(cross, stats=NULL, phes=NULL,chrs=NULL, peak=NULL, right=
   a<-max(sapply(as.character(unique(stats$phenotype)),nchar))/2.5
   nqtl<-dim(stats)[1]
   nphes<-length(unique(stats$phenotype))
+  if(is.null(rugsize)){
+    rugsize<-(1/nphes)+.01
+  }
   if(adj.ylabsize){
     ylab.adj<-(1/(nphes))+.1
     par(mar=c(5,4,4,2)+.1)
@@ -95,7 +103,12 @@ plotMultiQTL<-function(cross, stats=NULL, phes=NULL,chrs=NULL, peak=NULL, right=
   for(i in 1:nphes){
     p<-phes[i]
     tp<-dat[dat$phenotype==p,]
-    axis(side=2, at=i, labels=p, las=2, cex.axis=ylab.adj)
+    if(is.null(ylabelcex)){
+      axis(side=2, at=i, labels=p, las=2, cex.axis=ylab.adj)
+    }else{
+      axis(side=2, at=i, labels=p, las=2, cex.axis=ylabelcex)
+    }
+    
     for(j in 1:nrow(tp)){
       if(colbychr){
         segments(tp$lowCIpos[j],i,tp$hiCIpos[j],i,col=pal[tp$chr[j]], lty=linetype, lwd=linethickness)
@@ -113,7 +126,7 @@ plotMultiQTL<-function(cross, stats=NULL, phes=NULL,chrs=NULL, peak=NULL, right=
       }
     }
   }
-  rug(map2$pos, ticksize=.5/(.1*length(unique(stats$phenotype))))
+  rug(map2$pos, ticksize=rugsize)
   if(background){
     min.pos<-tapply(map2$pos, map2$chr, min)
     max.pos<-tapply(map2$pos, map2$chr, max)
