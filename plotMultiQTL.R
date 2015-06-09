@@ -1,6 +1,24 @@
+# cross: the R/qtl cross object
+# stats: output from stepwise.summary.simple. if not provided, the following five vectors are neede
+# phes=NULL,chrs=NULL, peak=NULL, right=NULL, left=NULL: vectors of phenotypes, chromosomes, the QTL positions (peak) and confidence interval bounds
+# cols="black": line and point color, indexed by the line in stats, or position in vectors. Overridden by colbychr.
+# pointsize=1: size (cex) of points, if FALSE, points are not plotted
+# pointshape=1: shape (pch) of points
+# linetype=1: lty of lines
+# linethickness=1: lwd of lines
+# mark.epi=FALSE: place a symbol where epistatic effects reside... not implemented yet
+# plotQTLdensity=TRUE
+# adj.ylabsize=TRUE: alter the size of the ylabel text based on the number of phenotypes?
+# colbychr=TRUE: color points, lines and boxes by chromosome
+# palette=terrain.colors: the palette to use for coloring
+# outline=FALSE: put a box around the plot?
+# background=FALSE: put a very transparent rectangle over each chromosome
+# title="QTL position plot": title of the plot
+
 plotMultiQTL<-function(cross, stats=NULL, phes=NULL,chrs=NULL, peak=NULL, right=NULL, left=NULL, cols="black",  
                        pointsize=1, pointshape=1,linetype=1,linethickness=1,
-                       mark.epi=FALSE, adj.ylabsize=TRUE, colbychr=TRUE, palette=terrain.colors, 
+                       plotQTLdensity=TRUE, binwidth=1, mark.epi=FALSE, 
+                       adj.ylabsize=TRUE, colbychr=TRUE, palette=terrain.colors, 
                        outline=FALSE, background=FALSE, title="QTL position plot"){
   #set up env.
   pal<-palette(nchr(cross))
@@ -44,7 +62,12 @@ plotMultiQTL<-function(cross, stats=NULL, phes=NULL,chrs=NULL, peak=NULL, right=
     map2[map2$chr==i,"pos"]<-map2[map2$chr==i,"pos"]+corr$corr[corr$chrn==i]
   }
   
-  plot(0,0, ylim=c(0,nphes), xlim=c(0,max(map2$pos)), type="n", bty="n", yaxt="n",xaxt="n",ylab="", xlab="Chromosome")
+  
+  if(plotQTLdensity){
+    plot(0,0, ylim=c(0,(nphes+(.1*nphes)+1)), xlim=c(0,max(map2$pos)), type="n", bty="n", yaxt="n",xaxt="n",ylab="", xlab="Chromosome")
+  }else{
+    plot(0,0, ylim=c(0,nphes), xlim=c(0,max(map2$pos)), type="n", bty="n", yaxt="n",xaxt="n",ylab="", xlab="Chromosome")
+  }
   if(outline) box()
   tloc<-ddply(map2,"chr",summarize,mean=mean(pos))$mean
   for(i in 1:nchr(cross)){
@@ -82,7 +105,12 @@ plotMultiQTL<-function(cross, stats=NULL, phes=NULL,chrs=NULL, peak=NULL, right=
 
     }
     if(pointshape){
-      points(tp$position,rep(i,length(tp$position)), col=cols[i],cex=pointsize[i], pch=pointshape)
+      if(colbychr){
+        points(tp$position,rep(i,length(tp$position)), col=pal[tp$chr],cex=pointsize[i], pch=pointshape)
+      }
+      else{
+        points(tp$position,rep(i,length(tp$position)), col=cols[i],cex=pointsize[i], pch=pointshape)
+      }
     }
   }
   rug(map2$pos, ticksize=.5/(.1*length(unique(stats$phenotype))))
@@ -93,5 +121,13 @@ plotMultiQTL<-function(cross, stats=NULL, phes=NULL,chrs=NULL, peak=NULL, right=
     rect(min.pos,rep(0,nchr(cross)),max.pos, rep(nphes), col=pal2, border = pal2)
   }
   title(title)
+  if(plotQTLdensity){
+    denpos<-density(dat$position,bw=binwidth)$x
+    den<-density(dat$position,bw=binwidth)$y
+    den<-den/max(den)
+    den<-den*(.1*nphes)+1
+    den<-den+nphes
+    lines(denpos,den)
+  }
 }
   
