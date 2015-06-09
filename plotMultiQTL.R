@@ -15,6 +15,7 @@
 # background=FALSE: put a very transparent rectangle over each chromosome
 # title="QTL position plot": title of the plot
 
+
 plotMultiQTL<-function(cross, stats=NULL, phes=NULL,chrs=NULL, peak=NULL, right=NULL, left=NULL, cols="black", 
                        chr.subset=NULL, ylabelcex=.5, rugsize=1,
                        pointsize=1, pointshape=1,linetype=1,linethickness=1,
@@ -111,7 +112,7 @@ plotMultiQTL<-function(cross, stats=NULL, phes=NULL,chrs=NULL, peak=NULL, right=
     
     for(j in 1:nrow(tp)){
       if(colbychr){
-        segments(tp$lowCIpos[j],i,tp$hiCIpos[j],i,col=pal[tp$chr[j]], lty=linetype, lwd=linethickness)
+        segments(tp$lowCIpos[j],i,tp$hiCIpos[j],i,col=pal[which(tp$chr[j]==chrnames(cross))], lty=linetype, lwd=linethickness)
       }else{
         segments(tp$lowCIpos[j],i,tp$hiCIpos[j],i,col=cols[i], lty=linetype, lwd=linethickness)
       }
