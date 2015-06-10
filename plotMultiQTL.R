@@ -16,7 +16,7 @@
 # title="QTL position plot": title of the plot
 
 
-plotMultiQTL<-function(cross, stats=NULL, phes=NULL,chrs=NULL, peak=NULL, right=NULL, left=NULL, cols="black", 
+plotMultiQTL<-function(cross, stats=NULL, phes=NULL,chrs=NULL, peak=NULL, right=NULL, left=NULL, cols=NULL, 
                        chr.subset=NULL, ylabelcex=NULL, rugsize=NULL,
                        pointsize=NULL, pointshape=19,linetype=1,linethickness=1,
                        plotQTLdensity=TRUE, binwidth=1, mark.epi=FALSE, 
@@ -32,7 +32,11 @@ plotMultiQTL<-function(cross, stats=NULL, phes=NULL,chrs=NULL, peak=NULL, right=
     stats<-data.frame(phes, chrs, peak, right, left)
     colnames(stats)<-c("phenotype","chromosome","position","lowCIpos","hiCIpos")
   }else{
-    stats<-stats[complete.cases(stats),c("phenotype","chromosome","position","lowCIpos","hiCIpos")]
+    stats1<-stats[complete.cases(stats),c("phenotype","chromosome","position","lowCIpos","hiCIpos")]
+    if(!is.null(cols)){
+      cols<-cols[complete.cases(stats1)]
+    }
+    stats<-stats1
   }
   for(i in c("chromosome","position","lowCIpos","hiCIpos")){
     stats[,i]<-as.numeric(as.character(stats[,i]))
@@ -84,21 +88,12 @@ plotMultiQTL<-function(cross, stats=NULL, phes=NULL,chrs=NULL, peak=NULL, right=
   }
   phes<-as.character(unique(stats$phenotype))
   
-  #make sure user input is correct
   if(length(cols)==1) {
     cols<-rep(cols, nphes)
-  }else{
-    if(length(cols)!=nphes){
-      print("cols needs to be a vector of 1 or length of phenotypes")
-    }
   }
 
   if(length(pointsize)==1) {
     pointsize<-rep(pointsize, nphes)
-  }else{
-    if(length(pointsize)!=nphes){
-      print("cex needs to be a vector of 1 or length of phenotypes")
-    }
   }
     
   for(i in 1:nphes){
@@ -111,7 +106,7 @@ plotMultiQTL<-function(cross, stats=NULL, phes=NULL,chrs=NULL, peak=NULL, right=
     }
     
     for(j in 1:nrow(tp)){
-      if(colbychr){
+      if(colbychr & is.null(cols)){
         segments(tp$lowCIpos[j],i,tp$hiCIpos[j],i,col=pal[which(tp$chr[j]==chrnames(cross))], lty=linetype, lwd=linethickness)
       }else{
         segments(tp$lowCIpos[j],i,tp$hiCIpos[j],i,col=cols[i], lty=linetype, lwd=linethickness)
@@ -119,7 +114,7 @@ plotMultiQTL<-function(cross, stats=NULL, phes=NULL,chrs=NULL, peak=NULL, right=
 
     }
     if(pointshape){
-      if(colbychr){
+      if(colbychr & is.null(cols)){
         points(tp$position,rep(i,length(tp$position)), col=pal[tp$chr],cex=pointsize[i], pch=pointshape)
       }
       else{
@@ -129,10 +124,16 @@ plotMultiQTL<-function(cross, stats=NULL, phes=NULL,chrs=NULL, peak=NULL, right=
   }
   rug(map2$pos, ticksize=rugsize)
   if(background){
-    min.pos<-tapply(map2$pos, map2$chr, min)
-    max.pos<-tapply(map2$pos, map2$chr, max)
-    pal2<-palette(nchr(cross), alpha=.05)
-    rect(min.pos,rep(0,nchr(cross)),max.pos, rep(nphes), col=pal2, border = pal2)
+    if(colbychr){
+      min.pos<-tapply(map2$pos, map2$chr, min)
+      max.pos<-tapply(map2$pos, map2$chr, max)
+      pal2<-palette(nchr(cross), alpha=.05)
+      rect(min.pos,rep(0,nchr(cross)),max.pos, rep(nphes), col=pal2, border = pal2)
+    }else{
+      min.pos<-tapply(map2$pos, map2$chr, min)
+      max.pos<-tapply(map2$pos, map2$chr, max)
+      rect(min.pos,rep(0,nchr(cross)),max.pos, rep(nphes), col=rgb(0,0,0,.05), border = rgb(0,0,0,.05))
+    }
   }
   title(title)
   if(plotQTLdensity){
