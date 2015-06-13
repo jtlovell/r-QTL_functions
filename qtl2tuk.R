@@ -14,7 +14,7 @@ qtl2df<-function(cross,chrs, poss, phe){
   return(df)
 }
 
-qtl2tuk<-function(cross, chrs, poss, phe, covar=NULL, wt=NULL){
+qtl2tuk<-function(cross, chrs, poss, phe, covar=NULL, wt=NULL, alpha=0.05){
   n.qtls<-length(chrs)
   out<-list()
   for(i in 1:n.qtls){
@@ -38,7 +38,7 @@ qtl2tuk<-function(cross, chrs, poss, phe, covar=NULL, wt=NULL){
     if(length(unique(df[,i]))<3){
       cld.out[[i]]<-lsm
     }else{
-      cld.out[[i]]<-cld(lsm)
+      cld.out[[i]]<-cld(lsm, alpha=alpha)
     }
   }
   cld.out
@@ -61,3 +61,6 @@ for (i in unique(stepout$phenotype)){
   poss=dat$pos
   out[[i]]<-qtl2tuk(cross=cross, n.qtls=length(chrs), chrs=chrs, poss=poss, phe=i)
 }
+
+mname1<-find.marker(fake.4way, 2,9)
+out<-eft(fake.4way, pheno.col="phenotype", mname1=mname1)
