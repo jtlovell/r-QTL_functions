@@ -36,7 +36,7 @@ plotMultiQTL<-function(cross, stats=NULL, phes=NULL,chrs=NULL, peak=NULL, right=
   if(is.null(cex)){
     cex<-(1/(1+(nphes*.01)))
   }
-  if(!is.integer(col) | is.character(col)){
+  if(!is.integer(col) & !is.character(col)){
     col<-"black"
   }
   for(i in c(lty, lwd, pch)) {
@@ -56,7 +56,7 @@ plotMultiQTL<-function(cross, stats=NULL, phes=NULL,chrs=NULL, peak=NULL, right=
   #simplify the dataset
   stats1<-stats[complete.cases(stats),c("phenotype","chromosome","position","lowCIpos","hiCIpos",
                                         "col","pch","lty","lwd","cex")]
-  for(i in c("position","lowCIpos","hiCIpos","col","pch","lty","lwd","cex")) stats1[,i]<-as.numeric(as.character(stats1[,i]))
+  for(i in c("position","lowCIpos","hiCIpos","pch","lty","lwd","cex")) stats1[,i]<-as.numeric(as.character(stats1[,i]))
   
   #convert colors to chromosomes if specified
   if(colbychr){
@@ -168,7 +168,7 @@ plotMultiQTL<-function(cross, stats=NULL, phes=NULL,chrs=NULL, peak=NULL, right=
       min.pos<-tapply(map2$pos, map2$chr, min)
       max.pos<-tapply(map2$pos, map2$chr, max)
       if(is.null(chr.subset)){
-         
+        rect(min.pos,rep(0,nchr(cross)),max.pos, rep(nphes), col=rgb(0,0,0,.05), border = rgb(0,0,0,.05))
       }else{
         rect(min.pos,rep(0,length(chr.subset)),max.pos, rep(nphes), col=rgb(0,0,0,.05), border = rgb(0,0,0,.05))
       }
