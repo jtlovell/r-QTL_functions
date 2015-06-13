@@ -18,7 +18,7 @@
 
 plotMultiQTL<-function(cross, stats=NULL, phes=NULL,chrs=NULL, peak=NULL, right=NULL, left=NULL, col=NULL, 
                        chr.subset=NULL, ylabelcex=NULL, rugsize=NULL, cex=NULL, pch=19,lty=1,lwd=1,
-                       plotQTLdensity=TRUE, binwidth=1, mark.epi=FALSE, 
+                       plotQTLdensity=TRUE, binwidth=1, mark.epi=FALSE, adj.ylabsize=TRUE,
                        colbychr=TRUE, palette=rainbow, showConfidenceInterval=TRUE, showPointEstimate=TRUE,
                        outline=FALSE, background=TRUE,plotNullPheno=FALSE, title="QTL position plot"){
   #add to dataframe columns w/ colors, pch, lwd, lty, cex
@@ -68,7 +68,13 @@ plotMultiQTL<-function(cross, stats=NULL, phes=NULL,chrs=NULL, peak=NULL, right=
   if(is.null(rugsize)){
     rugsize<-(1/(nphes^2))+.01
   }
- 
+  if(adj.ylabsize){
+    ylab.adj<-(1/(nphes))+.1
+    par(mar=c(5,4,4,2)+.1)
+  }else{
+    ylab.adj<-.5
+    par(mar=c(5,a,4,2)+.1)
+  }
   #set plotting window
   a<-(sqrt(2*max(sapply(as.character(unique(stats$phenotype)),nchar)))*(ylab.adj^2))+4
   par(mar=c(5,a,4,2)+.1)
