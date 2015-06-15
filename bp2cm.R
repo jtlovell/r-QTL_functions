@@ -10,6 +10,7 @@ bp2cm<-function(cross,geneID=gff$A.id,chrID=gff$chr, bpPos=gff$start, markerBP=N
   }
   
   require(splines)
+  require(car)
   
   par(mfrow=c(2,1))
   all.dat<-data.frame()
