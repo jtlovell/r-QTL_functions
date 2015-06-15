@@ -1,26 +1,8 @@
-# cross: the R/qtl cross object
-# stats: output from stepwise.summary.simple. if not provided, the following five vectors are neede
-# phes=NULL,chrs=NULL, peak=NULL, right=NULL, left=NULL: vectors of phenotypes, chromosomes, the QTL positions (peak) and confidence interval bounds
-# cols="black": line and point color, indexed by the line in stats, or position in vectors. Overridden by colbychr.
-# pointsize=1: size (cex) of points, if FALSE, points are not plotted
-# pointshape=1: shape (pch) of points
-# linetype=1: lty of lines
-# linethickness=1: lwd of lines
-# mark.epi=FALSE: place a symbol where epistatic effects reside... not implemented yet
-# plotQTLdensity=TRUE
-# adj.ylabsize=TRUE: alter the size of the ylabel text based on the number of phenotypes?
-# colbychr=TRUE: color points, lines and boxes by chromosome
-# palette=terrain.colors: the palette to use for coloring
-# outline=FALSE: put a box around the plot?
-# background=FALSE: put a very transparent rectangle over each chromosome
-# title="QTL position plot": title of the plot
-
-
 plotMultiQTL<-function(cross, stats=NULL, phes=NULL,chrs=NULL, peak=NULL, right=NULL, left=NULL, col=NULL, 
                        chr.subset=NULL, ylabelcex=NULL, rugsize=NULL, cex=NULL, pch=19,lty=1,lwd=1,
-                       plotQTLdensity=TRUE, binwidth=1, mark.epi=FALSE, adj.ylabsize=TRUE,
+                       plotQTLdensity=TRUE, binwidth=1, adj.ylabsize=TRUE,
                        colbychr=TRUE, palette=rainbow, showConfidenceInterval=TRUE, showPointEstimate=TRUE,
-                       outline=FALSE, background=TRUE,plotNullPheno=FALSE, title="QTL position plot"){
+                       outline=FALSE, background=TRUE,plotNullPheno=FALSE){
   #add to dataframe columns w/ colors, pch, lwd, lty, cex
 
   if(is.null(stats)){
@@ -174,7 +156,6 @@ plotMultiQTL<-function(cross, stats=NULL, phes=NULL,chrs=NULL, peak=NULL, right=
       }
     }
   }
-  title(title)
   if(plotQTLdensity){
     if(!is.null(chr.subset)){
       denpos<-density(dat$position[dat$chromosome %in% chr.subset],bw=binwidth)$x
