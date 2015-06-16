@@ -2,7 +2,7 @@ plotMultiQTL<-function(cross, stats=NULL, phes=NULL,chrs=NULL, peak=NULL, right=
                        chr.subset=NULL, ylabelcex=NULL, rugsize=NULL, cex=NULL, pch=19,lty=1,lwd=1,
                        plotQTLdensity=TRUE, binwidth=1, adj.ylabsize=TRUE,
                        colbychr=TRUE, palette=rainbow, showConfidenceInterval=TRUE, showPointEstimate=TRUE,
-                       outline=FALSE, background=TRUE,plotNullPheno=FALSE){
+                       outline=FALSE, background=TRUE,plotNullPheno=FALSE, setmargin=NULL){
   #add to dataframe columns w/ colors, pch, lwd, lty, cex
 
   if(is.null(stats)){
@@ -58,9 +58,12 @@ plotMultiQTL<-function(cross, stats=NULL, phes=NULL,chrs=NULL, peak=NULL, right=
     par(mar=c(5,a,4,2)+.1)
   }
   #set plotting window
-  a<-(sqrt(2*max(sapply(as.character(unique(stats$phenotype)),nchar)))*(ylab.adj^2))+4
-  par(mar=c(5,a,4,2)+.1)
-  
+  if(is.null(setmargin)){
+    a<-(sqrt(2*max(sapply(as.character(unique(stats$phenotype)),nchar)))*(ylab.adj^2))+4
+    par(mar=c(5,a,4,2)+.1)
+  }else{
+    par(mar=setmargin)
+  }
   #prepare the map
   if(!is.null(chr.subset)){
     map<-pull.map(cross, as.table=T, chr=chr.subset)
