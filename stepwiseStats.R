@@ -1,35 +1,28 @@
-stepwiseqtl.summary.simple<-function(cross, model.in, phe, covar=NULL, ci.method="drop", drop=1.5, plot=FALSE, printout=TRUE, prob=.9){
-  #set up the environment
   if(class(cross)[1]=="riself" | class(cross)[1]=="bc"){
-    stats_out<-data.frame(phenotype=character(),chromosome=numeric(),position=numeric(),
-                          df=numeric(),type3SS=numeric(),LOD=numeric(),perc.var=numeric(),Fstat=numeric(),P.chi2=numeric(),P.F=numeric(),
-                          effect.estimate=numeric(),effect.SE=numeric(),effect.t=numeric(),
-                          lowCImarker=character(), hiCImarker=character(),
-                          lowCIpos=character(), hiCIpos=character())
+    statcols<-c("phenotype", "chromosome", "position",  "df", "type3SS", "LOD", "perc.var", "Fstat", "P.chi2", "P.F",
+                "effect.estimate", "effect.SE", "effect.t",
+                "lowCImarker", "hiCImarker", "lowCIpos", "hiCIpos")
   }else{
     if(class(cross)[1]=="f2"){
-      stats_out<-data.frame(phenotype=character(),chromosome=numeric(),position=numeric(),
-                            df=numeric(),type3SS=numeric(),LOD=numeric(),perc.var=numeric(),Fstat=numeric(),P.chi2=numeric(),P.F=numeric(),
-                            lowCImarker=character(), hiCImarker=character(),
-                            lowCIpos=character(), hiCIpos=character())
+      statcols<-c("phenotype","chromosome","position","df","type3SS","LOD","perc.var","Fstat","P.chi2","P.F",
+                  "lowCImarker", "hiCImarker","lowCIpos", "hiCIpos")
     }else{
-      print("stepwiseqtl.summary is only implemented for f2, bc and ril experimental designs")
-      next
+      stop("stepwiseStats is only implemented for f2, bc and ril experimental designs")
     }
   }
-  statcols<-names(stats_out)
-  if(class(model.in)=="list")
+  
+  if(is.list(model.in))
   {
     stepout<-model.in[[phe]]
   }else{stepout<-model.in}
   
-  if(nqtl(stepout)==0){
-    if(printout){cat(paste(" ******* phenotype",phe,"has a null qtl model","\n"))}
-  }else{
-    #plot the lod profile to the window
+  if(nqtl(stepout)>0){
+    
+    
     if(plot){
       plotLodProfile(stepout,main=paste(phe,"formula: ", formula(stepout)))
     }
+    
     #fit the qtl model
     fit<-fitqtl(cross,
                 pheno.col=phe,
@@ -37,10 +30,12 @@ stepwiseqtl.summary.simple<-function(cross, model.in, phe, covar=NULL, ci.method
                 formula=formula(stepout),
                 get.ests=T,dropone=T,covar=covar,
                 method="hk")
+    
     #determine the number of terms/qtl in the model
     nqtls<-nqtl(stepout)
     nterms<-sum(countqtlterms(formula(stepout), ignore.covar=F)[c(1,4)])
     ncovar<-length(covar)
+    
     #extract information if the qtl model has multiple qtls/covariates
     if(nterms>1){
       ests_out<-summary(fit)$ests[2:(nterms+1),1:3]
@@ -110,7 +105,11 @@ stepwiseqtl.summary.simple<-function(cross, model.in, phe, covar=NULL, ci.method
       ests_out<-summary(fit)$ests[2:(nqtls+1),1:3]
       colnames(stats)<-statcols; rownames(stats)<-stepout$name
     }
-    stats_out<-rbind(stats_out,stats)
-    return(stats_out)
+    stats$id<-rownames(stats)
+    stats<-stats[,c(which(colnames(stats)=="id"),1:(length(colnames(stats))-1))]
+    return(stats)
+  }else{
+    cat(" ******* phenotype",phe,"has a null qtl model","\n")
+    stats<-NULL
   }
 }

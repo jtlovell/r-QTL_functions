@@ -1,0 +1,28 @@
+ll<-read.csv("~/Desktop/occurrences.csv")
+library(rworldmap)
+head(ll)
+pdf("pv2015_map.pdf")
+par(mfrow=c(2,1))
+ll<-ll[complete.cases(ll[,c("decimalLatitude","decimalLongitude")]),]
+ll$decimalLongitude<-ifelse(ll$decimalLongitude>0,ll$decimalLongitude*(-1),ll$decimalLongitude)
+newmap <- getMap(resolution = "low")
+max.lat<-max(ll$decimalLatitude, na.rm=T)
+min.lat<-min(ll$decimalLatitude, na.rm=T)
+max.lon<-max(ll$decimalLongitude, na.rm=T)
+min.lon<-min(ll$decimalLongitude, na.rm=T)
+plot(newmap, xlim = c(min.lon,max.lon), ylim = c(min.lat, max.lat), asp = 1)
+points(ll$decimalLongitude, ll$decimalLatitude, col = "red", cex = .6)
+title("herbarium collection locales")
+
+ll2<-ll[ll$year>2006,]
+max.lat<-max(ll2$decimalLatitude, na.rm=T)
+min.lat<-min(ll2$decimalLatitude, na.rm=T)
+max.lon<-max(ll2$decimalLongitude, na.rm=T)
+min.lon<-min(ll2$decimalLongitude, na.rm=T)
+plot(newmap, xlim = c(min.lon,max.lon), ylim = c(min.lat, max.lat), asp = 1)
+points(ll2$decimalLongitude, ll2$decimalLatitude, col = "blue", cex = .6)
+title("collections post 2006")
+dev.off()
+
+dat<-read.delim("~/Downloads/magic.15012010 (1)/chr5.MAGIC.data", header=F, sep=" ")
+map<-read.delim("~/Downloads/magic.15012010 (1)/chr5.MAGIC.map", header=T, sep="\t")
