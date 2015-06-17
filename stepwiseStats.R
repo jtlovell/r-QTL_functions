@@ -36,11 +36,6 @@ stepwiseStats<-function(cross, model.in, phe, covar=NULL, ci.method="drop", drop
     nterms<-sum(countqtlterms(formula(stepout), ignore.covar=F)[c(1,4)])
     ncovar<-length(covar)
     
-    
-    
-    
-        
-    
     #extract information if the qtl model has multiple qtls/covariates
     if(nterms>1){
       ests_out<-summary(fit)$ests[2:(nterms+1),1:3]
@@ -68,22 +63,36 @@ stepwiseStats<-function(cross, model.in, phe, covar=NULL, ci.method="drop", drop
         pos<- c(names(covar), stepout$pos)
       }
       #if epistasis, add NAs into the dataframe
-      if(as.numeric(countqtlterms(formula(stepout))[4])>0) {
+      nepi<-as.numeric(countqtlterms(formula(stepout))[4])
+      if(nepi>0) {
         epi.ci<-data.frame()
-        for (j in 1:countqtlterms(formula(stepout))[4]){
+        for (j in 1:nepi){
           epi.ci.out<-(rep(NA,4))
           cis<-rbind(cis,epi.ci.out)
         }
-        chrs<-c(chrs,rep(NA,countqtlterms(formula(stepout))[4]))
-        pos<- c(pos,rep(NA,countqtlterms(formula(stepout))[4]))
+        chrs<-c(chrs,rep(NA,nepi))
+        pos<- c(pos,rep(NA,nepi))
       }
       
-      if(class(cross)[1]=="riself"){
+      if(class(cross)[1] %in% c("riself","bc")){
         ests_out<-summary(fit)$ests[2:(nterms+1),1:3]
         stats<-data.frame(rep(phe,nterms),chrs,pos,fit$result.drop[1:nterms,],ests_out,cis)
         colnames(stats)<-statcols
       }else{
-        stats<-data.frame(rep(phe,nterms),chrs,pos,fit$result.drop[1:nterms,],cis)
+        ests.all<-summary(fit)$ests
+        rows.dom<-grep("d",rownames(ests.all))
+        rows.add<-grep("a",rownames(ests.all))
+        dom.ests_out<-ests.all[rows.dom,1:3]
+        add.ests_out<-ests.all[rows.add,1:3]
+        ests.out<-data.frame(dom.ests_out,add.ests_out)
+        ests.out<-ests.out[1:nqtls,]
+        if(nepi>0) {
+          epi.ests<-ests.out[1:nepi,]
+          epi.ests[!is.na(epi.ests)]<-NA
+          ests.out<-rbind(ests.out, epi.ests)
+        }        
+        colnames(ests.out)<-c("est.dom","SE.dom","t.dom","est.add","SE.add","t.add")
+        stats<-data.frame(rep(phe,nterms),chrs,pos,fit$result.drop[1:nterms,],ests.out,cis)
         colnames(stats)<-statcols
       }
     }else{
