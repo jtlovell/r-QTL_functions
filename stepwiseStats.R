@@ -7,16 +7,14 @@ stepwiseStats<-function(cross, model.in, phe, covar=NULL, ci.method="drop", drop
   }else{
     if(class(cross)[1]=="f2"){
       statcols<-c("phenotype","chromosome","position","df","type3SS","LOD","perc.var","Fstat","P.chi2","P.F",
+                  "est.dom", "SE.dom", "t.dom", "est.add", "SE.add", "t.add",
                   "lowCImarker", "hiCImarker","lowCIpos", "hiCIpos")
     }else{
       stop("stepwiseStats is only implemented for f2, bc and ril experimental designs")
     }
   }
-  
-  if(is.list(model.in))
-  {
-    stepout<-model.in[[phe]]
-  }else{stepout<-model.in}
+
+  stepout<-model.in
   
   if(nqtl(stepout)>0){
     
@@ -37,6 +35,11 @@ stepwiseStats<-function(cross, model.in, phe, covar=NULL, ci.method="drop", drop
     nqtls<-nqtl(stepout)
     nterms<-sum(countqtlterms(formula(stepout), ignore.covar=F)[c(1,4)])
     ncovar<-length(covar)
+    
+    
+    
+    
+        
     
     #extract information if the qtl model has multiple qtls/covariates
     if(nterms>1){
@@ -101,10 +104,35 @@ stepwiseStats<-function(cross, model.in, phe, covar=NULL, ci.method="drop", drop
         stats<-data.frame(c(phe,stepout$chr[1],stepout$pos[1],
                             as.numeric(fit$result.full[1,c(1,2,4,5,3,6,7)]),as.numeric(ests_out),cis[1,]))
       }else{
+        ests_out<-summary(fit)$ests
+        rows.dom<-grep("d",rownames(ests_out))
+        rows.add<-grep("a",rownames(ests_out))
+        if(nterms==1){
+          dom.ests_out<-ests_out[rows.dom,1:3]; names(dom.ests_out)<-c("est.dom","SE.dom","t.dom")
+          add.ests_out<-ests_out[rows.add,1:3]; names(add.ests_out)<-c("est.add","SE.add","t.add")
+          ests.out<-data.frame(t(data.frame(c(dom.ests_out,add.ests_out))))
+        }else{
+          if(nterms>nqtls){
+            rows.epi<-grep(":",rownames(ests_out))
+            rows.dom<-rows.dom[!rows.dom %in% rows.epi]
+            rows.add<-rows.add[!rows.add %in% rows.epi]
+            dom.ests_out<-data.frame(ests_out[rows.dom,1:3]); colnames(dom.ests_out)<-c("est.dom","SE.dom","t.dom")
+            add.ests_out<-data.frame(ests_out[rows.add,1:3]); colnames(add.ests_out)<-c("est.add","SE.add","t.add")
+            ests.out<-cbind(dom.ests_out,add.ests_out)
+            #add rows of nas to data frame for epis
+            n.epi<-nterms-nqtls
+            for (i in 1:n.epi) ests.out<-rbind(ests.out,NA)     
+          }else{
+            dom.ests_out<-data.frame(ests_out[rows.dom,1:3]); colnames(dom.ests_out)<-c("est.dom","SE.dom","t.dom")
+            add.ests_out<-data.frame(ests_out[rows.add,1:3]); colnames(add.ests_out)<-c("est.add","SE.add","t.add")
+            ests.out<-cbind(dom.ests_out,add.ests_out)
+          }
+        }
         stats<-data.frame(c(phe,stepout$chr[1],stepout$pos[1],
-                            as.numeric(fit$result.full[1,c(1,2,4,5,3,6,7)]),cis[1,]))
+                            as.numeric(fit$result.full[1,c(1,2,4,5,3,6,7)]),
+                            ests.out,
+                            cis[1,]))
       }
-      ests_out<-summary(fit)$ests[2:(nqtls+1),1:3]
       colnames(stats)<-statcols; rownames(stats)<-stepout$name
     }
     stats$id<-rownames(stats)
