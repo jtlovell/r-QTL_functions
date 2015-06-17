@@ -1,5 +1,5 @@
 addMergePhenos<-function(cross, df){
-  id<-as.numeric(as.character(getid(cross.all)))
+  id<-as.numeric(as.character(getid(cross)))
   dat$id<-as.numeric(as.character(dat$id))
   dat<-dat[dat$id %in% id,]
   nodat<-id[!id %in% dat$id]
