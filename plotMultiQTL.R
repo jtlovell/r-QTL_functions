@@ -2,7 +2,7 @@ plotMultiQTL<-function(cross, stats=NULL, phes=NULL,chrs=NULL, peak=NULL, right=
                        chr.subset=NULL, ylabelcex=NULL, rugsize=NULL, cex=NULL, pch=19,lty=1,lwd=1,
                        plotQTLdensity=TRUE, binwidth=1, adj.ylabsize=TRUE,
                        colbychr=TRUE, palette=rainbow, showConfidenceInterval=TRUE, showPointEstimate=TRUE,
-                       outline=FALSE, background=TRUE,plotNullPheno=FALSE, setmargin=NULL){
+                       outline=FALSE, background=TRUE,plotNullPheno=FALSE, setmargin=NULL, ...){
   #add to dataframe columns w/ colors, pch, lwd, lty, cex
 
   if(is.null(stats)){
@@ -99,9 +99,9 @@ plotMultiQTL<-function(cross, stats=NULL, phes=NULL,chrs=NULL, peak=NULL, right=
   
   #add space at the top of the plotting window if needed for density plots
   if(plotQTLdensity){
-    plot(0,0, ylim=c(0,(nphes+(.1*nphes)+1)), xlim=c(0,max(map2$pos)), type="n", bty="n", yaxt="n",xaxt="n",ylab="", xlab="Chromosome")
+    plot(0,0, ylim=c(0,(nphes+(.1*nphes)+1)), xlim=c(0,max(map2$pos)), type="n", bty="n", yaxt="n",xaxt="n",ylab="", xlab="Chromosome",...)
   }else{
-    plot(0,0, ylim=c(0,nphes), xlim=c(0,max(map2$pos)), type="n", bty="n", yaxt="n",xaxt="n",ylab="", xlab="Chromosome")
+    plot(0,0, ylim=c(0,nphes), xlim=c(0,max(map2$pos)), type="n", bty="n", yaxt="n",xaxt="n",ylab="", xlab="Chromosome",...)
   }
   
   #add the x axis
