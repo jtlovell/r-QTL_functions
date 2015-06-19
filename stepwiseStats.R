@@ -1,5 +1,3 @@
-stepwiseStats<-function(cross, model.in, phe, covar=NULL, ci.method="drop", drop=1.5, prob=.95, plot=FALSE, printout=TRUE){
-  
   if(class(cross)[1]=="riself" | class(cross)[1]=="bc"){
     statcols<-c("phenotype", "chromosome", "position",  "df", "type3SS", "LOD", "perc.var", "Fstat", "P.chi2", "P.F",
                 "effect.estimate", "effect.SE", "effect.t",

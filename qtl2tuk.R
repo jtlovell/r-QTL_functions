@@ -64,3 +64,4 @@ for (i in unique(stepout$phenotype)){
 
 mname1<-find.marker(fake.4way, 2,9)
 out<-eft(fake.4way, pheno.col="phenotype", mname1=mname1)
+>>>>>>> upstream/master
