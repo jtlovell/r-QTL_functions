@@ -99,9 +99,9 @@ plotMultiQTL<-function(cross, stats=NULL, phes=NULL,chrs=NULL, peak=NULL, right=
   
   #add space at the top of the plotting window if needed for density plots
   if(plotQTLdensity){
-    plot(0,0, ylim=c(0,(nphes+(.1*nphes)+1)), xlim=c(0,max(map2$pos)), type="n", bty="n", yaxt="n",xaxt="n",ylab="", xlab="Chromosome",...)
+    plot(0,0, ylim=c(0,(nphes+(.1*nphes)+1)), xlim=c(0,max(map2$pos)), type="n", bty="n", yaxt="n",xaxt="n",ylab="", ...)
   }else{
-    plot(0,0, ylim=c(0,nphes), xlim=c(0,max(map2$pos)), type="n", bty="n", yaxt="n",xaxt="n",ylab="", xlab="Chromosome",...)
+    plot(0,0, ylim=c(0,nphes), xlim=c(0,max(map2$pos)), type="n", bty="n", yaxt="n",xaxt="n",ylab="",...)
   }
   
   #add the x axis
